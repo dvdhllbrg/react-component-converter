@@ -1,8 +1,7 @@
-import React from "react";
-
 type UploadFileButtonProps = {
   onChange: (result: string) => void;
 };
+
 export const UploadFileButton = ({ onChange }: UploadFileButtonProps) => {
   const uploadFile = (event: React.ChangeEvent<HTMLInputElement>) => {
     let file = event.target.files?.[0];

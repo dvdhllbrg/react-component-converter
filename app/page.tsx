@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { javascript } from "@codemirror/lang-javascript";
@@ -14,7 +14,13 @@ export default function Home() {
   const [response, setResponse] = useState("");
   const [error, setError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const [editorTheme, setEditorTheme] = useState<"light" | "dark">("light");
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      setEditorTheme("dark");
+    }
+  }, []);
 
   const convert = async () => {
     setIsLoading(true);
@@ -80,7 +86,7 @@ export default function Home() {
               value={input}
               extensions={[javascript({ jsx: true })]}
               onChange={onEditorChange}
-              theme={dark ? "dark" : "light"}
+              theme={editorTheme}
             />
           </div>
           <div className="w-full lg:w-1/2">
@@ -96,7 +102,7 @@ export default function Home() {
                 height="500px"
                 value={response}
                 extensions={[javascript({ jsx: true })]}
-                theme={dark ? "dark" : "light"}
+                theme={editorTheme}
                 readOnly
               />
             </div>
@@ -110,7 +116,7 @@ export default function Home() {
           🪄 Convert
         </button>
       </main>
-      <footer className="text-sm mt-32 text-center">
+      <footer className="text-sm mt-32 text-center dark:text-gray-300">
         Made by{" "}
         <a
           className="underline text-blue-400 hover:text-blue-600 visited:text-blue-500"

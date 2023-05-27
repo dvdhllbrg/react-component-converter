@@ -1,13 +1,19 @@
-import React from "react";
+"use client";
+import { useEffect, useState } from "react";
 
 type CopyButtonProps = {
   content: string;
 };
 export const CopyButton = ({ content }: CopyButtonProps) => {
-  const type = "text/plain";
-  const blob = new Blob([content], { type });
-  const data = [new ClipboardItem({ [type]: blob })];
-  const copy = () => navigator.clipboard.write(data);
+  const [data, setData] = useState<ClipboardItem[]>();
+
+  useEffect(() => {
+    const type = "text/plain";
+    const blob = new Blob([content], { type });
+    setData([new ClipboardItem({ [type]: blob })]);
+  }, [content]);
+
+  const copy = () => data && navigator.clipboard.write(data);
 
   return (
     <button
