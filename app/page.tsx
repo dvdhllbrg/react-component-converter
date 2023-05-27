@@ -1,113 +1,132 @@
-import Image from 'next/image'
+"use client";
+import { useState } from "react";
+import CodeMirror from "@uiw/react-codemirror";
+import { LoadingOverlay } from "@/components/LoadingOverlay";
+import { javascript } from "@codemirror/lang-javascript";
+import { UploadFileButton } from "@/components/UploadFileButton";
+import { CopyButton } from "@/components/CopyButton";
+import { ErrorAlert } from "@/components/ErrorAlert";
 
 export default function Home() {
+  const [input, setInput] = useState(
+    "class Welcome extends React.Component {\n  render() {\n    return <h1>Hello, {this.props.name}</h1>;\n  }\n}\n"
+  );
+  const [response, setResponse] = useState("");
+  const [error, setError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+  const convert = async () => {
+    setIsLoading(true);
+    const rawRes = await fetch("/api", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+    const res = await rawRes.json();
+    if (res.error) {
+      setError(true);
+    } else if (res.content) {
+      setResponse(res.content);
+    }
+    setIsLoading(false);
+  };
+
+  const onEditorChange = (value: string) => {
+    setError(false);
+    setInput(value);
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
+    <div className="container mx-auto px-6  py-9 max-w-7xl lg:px-0">
+      <main>
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-300 lg:text-4xl">
+          Convert your old React components with the power of{" "}
+          <span className="line-through">magic</span> AI
+        </h1>
+        <p className="mt-4 text-gray-500 dark:text-gray-300">
+          You&apos;re a React developer. You know class components are old and
+          outdated, but your huge codebase is littered with them and converting
+          them is a hassle. Let AI do the heavy lifting so you can focus on
+          building new stuff, without being bogged down by old cruft. Just paste
+          a class component in the first textbox and hit the button. The machine
+          will convert it to a new and modern functional component (or you know,
+          it will try. It&apos;s not a perfect technology and it can be pretty
+          flaky).
         </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
+        <p className="mt-4 text-gray-500 dark:text-gray-300 mb-4">
+          Note that while this site does not store any data about the components
+          you send in, all data uploaded is passed on to OpenAI.{" "}
           <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="https://openai.com/policies/api-data-usage-policies"
+            className="underline text-blue-400 hover:text-blue-600 visited:text-blue-500"
           >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
+            They say that they don&apos;t use API submitted data to train their
+            models
           </a>
+          , but it is up to you to decide how sensitive the code you&apos;re
+          submitting is and whether your comfortable letting them read it.
+        </p>
+        <ErrorAlert show={error} />
+        <div className="flex flex-col lg:flex-row w-full gap-4 mt-4">
+          <div className="w-full lg:w-1/2">
+            <div className="flex justify-between mb-2 items-center">
+              <h2 className="text-lg font-bold text-gray-800 dark:text-gray-300 lg:text-xl">
+                Old component (clunky, kinda bad)
+              </h2>
+              <UploadFileButton onChange={(text) => setInput(text)} />
+            </div>
+            <CodeMirror
+              height="500px"
+              value={input}
+              extensions={[javascript({ jsx: true })]}
+              onChange={onEditorChange}
+              theme={dark ? "dark" : "light"}
+            />
+          </div>
+          <div className="w-full lg:w-1/2">
+            <div className="flex justify-between mb-2">
+              <h2 className="text-lg font-bold text-gray-800 items-center dark:text-gray-300 lg:text-xl">
+                New component (sleek, smells like flowers)
+              </h2>
+              <CopyButton content={response} />
+            </div>
+            <div className="relative">
+              {isLoading && <LoadingOverlay />}
+              <CodeMirror
+                height="500px"
+                value={response}
+                extensions={[javascript({ jsx: true })]}
+                theme={dark ? "dark" : "light"}
+                readOnly
+              />
+            </div>
+          </div>
         </div>
-      </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          onClick={convert}
+          disabled={isLoading}
+          className="mt-4 block rounded-lg mx-auto bg-blue-600 px-6 py-3 font-medium text-white w-44 hover:bg-blue-500 disabled:opacity-50 disabled:hover:bg-blue-600 disabled:cursor-not-allowed"
         >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
+          🪄 Convert
+        </button>
+      </main>
+      <footer className="text-sm mt-32 text-center">
+        Made by{" "}
         <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800 hover:dark:bg-opacity-30"
-          target="_blank"
-          rel="noopener noreferrer"
+          className="underline text-blue-400 hover:text-blue-600 visited:text-blue-500"
+          href="https://davidhallberg.dev"
         >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
+          David
         </a>
-
+        . Check the code{" "}
         <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
+          className="underline text-blue-400 hover:text-blue-600 visited:text-blue-500"
+          href="https://github.com/dvdhllbrg/react-component-converter"
         >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore the Next.js 13 playground.
-          </p>
+          on GitHub
         </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+        .
+      </footer>
+    </div>
+  );
 }
