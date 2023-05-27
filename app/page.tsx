@@ -48,7 +48,7 @@ export default function Home() {
   };
 
   return (
-    <div className="container mx-auto px-6  py-9 max-w-7xl lg:px-0">
+    <div className="container mx-auto px-6 py-9 max-w-7xl">
       <main>
         <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-300 lg:text-4xl">
           Convert your old React components with the power of{" "}
