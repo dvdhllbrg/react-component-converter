@@ -24,15 +24,20 @@ export default function Home() {
 
   const convert = async () => {
     setIsLoading(true);
-    const rawRes = await fetch("/api", {
-      method: "POST",
-      body: JSON.stringify(input),
-    });
-    const res = await rawRes.json();
-    if (res.error) {
+    try {
+      const rawRes = await fetch("/api", {
+        method: "POST",
+        body: JSON.stringify(input),
+      });
+      const res = await rawRes.json();
+
+      if (res.error) {
+        setError(true);
+      } else if (res.content) {
+        setResponse(res.content);
+      }
+    } catch {
       setError(true);
-    } else if (res.content) {
-      setResponse(res.content);
     }
     setIsLoading(false);
   };
