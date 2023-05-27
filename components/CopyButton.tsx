@@ -5,15 +5,7 @@ type CopyButtonProps = {
   content: string;
 };
 export const CopyButton = ({ content }: CopyButtonProps) => {
-  const [data, setData] = useState<ClipboardItem[]>();
-
-  useEffect(() => {
-    const type = "text/plain";
-    const blob = new Blob([content], { type });
-    setData([new ClipboardItem({ [type]: blob })]);
-  }, [content]);
-
-  const copy = () => data && navigator.clipboard.write(data);
+  const copy = () => navigator.clipboard.writeText(content);
 
   return (
     <button
